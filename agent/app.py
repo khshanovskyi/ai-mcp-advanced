@@ -12,7 +12,7 @@ from agent.models.message import Message, Role
 # https://remote.mcpservers.org/fetch/mcp
 
 async def main():
-    mcp_client = CustomMCPClient()
+    mcp_client = MCPClient()
 
     await mcp_client.connect(mcp_server_url="http://localhost:8006/mcp")
     tools: list[dict] = await mcp_client.get_tools()
