@@ -23,9 +23,6 @@ class MCPClient:
 
         await self.session.initialize()
 
-        if not await self.session.send_ping():
-            raise ValueError("MCP server connection failed")
-
     async def get_tools(self) -> list[dict[str, Any]]:
         """Get available tools from MCP server"""
         if not self.session:

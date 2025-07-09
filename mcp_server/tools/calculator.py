@@ -1,13 +1,12 @@
 from typing import Any, Dict
 from .base import BaseTool
-from .._constants import CALCULATOR
 
 
 class CalculatorTool(BaseTool):
 
     @property
     def name(self) -> str:
-        return CALCULATOR
+        return "simple_calculator"
 
     @property
     def description(self) -> str:

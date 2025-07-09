@@ -2,7 +2,6 @@ from typing import Any
 
 import requests
 
-from mcp_server._constants import WEB_SEARCH, CALCULATOR
 from mcp_server.tools.base import BaseTool
 
 
@@ -12,7 +11,7 @@ class WebSearchTool(BaseTool):
     def name(self) -> str:
         #TODO:
         # 1. Return `WEB_SEARCH` constant
-        return WEB_SEARCH
+        return "web_search"
 
     @property
     def description(self) -> str:
