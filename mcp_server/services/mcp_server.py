@@ -76,25 +76,7 @@ class MCPServer:
         #                 "serverInfo": self.server_info
         #             }
         # 5. Return created MCP response and `session_id`
-        session_id = str(uuid.uuid4()).replace("-", "")
-        session = MCPSession(session_id)
-        self.sessions[session_id] = session
 
-        protocol_version = request.params.get("protocolVersion") if request.params else self.protocol_version
-        response = MCPResponse(
-            id=request.id,
-            result={
-                "protocolVersion": protocol_version,
-                "capabilities": {
-                    "tools": {},
-                    "resources": {},
-                    "prompts": {}
-                },
-                "serverInfo": self.server_info
-            }
-        )
-
-        return response, session_id
 
     def handle_tools_list(self, request: MCPRequest) -> MCPResponse:
         """Handle tools/list request"""
@@ -104,11 +86,7 @@ class MCPServer:
         #       - id=request.id
         #       - result={"tools": tools_list}
         # 3. Return created MCP response
-        tools_list = [tool.to_mcp_tool() for tool in self.tools.values()]
-        return MCPResponse(
-            id=request.id,
-            result={"tools": tools_list}
-        )
+
 
     def handle_tools_call(self, request: MCPRequest) -> MCPResponse:
         """Handle tools/call request with proper MCP-compliant response format"""
@@ -131,62 +109,4 @@ class MCPServer:
         #       - id=request.id
         #       - result={"content": [{"type": "text", "text": f"Tool execution error: {str(tool_error)}"}], "isError": True}
 
-        if not request.params:
-            return MCPResponse(
-                id=request.id,
-                error=ErrorResponse(
-                    code=-32602,
-                    message="Missing parameters"
-                )
-            )
 
-        # Extract tool name and arguments according to MCP spec
-        tool_name = request.params.get("name")
-        arguments = request.params.get("arguments", {})
-
-        if not tool_name:
-            return MCPResponse(
-                id=request.id,
-                error=ErrorResponse(
-                    code=-32602,
-                    message="Missing required parameter: name"
-                )
-            )
-
-        if tool_name not in self.tools:
-            return MCPResponse(
-                id=request.id,
-                error=ErrorResponse(
-                    code=-32601,
-                    message=f"Tool '{tool_name}' not found"
-                )
-            )
-
-        tool = self.tools[tool_name]
-
-        try:
-            result_text = tool.execute(arguments)
-            return MCPResponse(
-                id=request.id,
-                result={
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": result_text
-                        }
-                    ]
-                }
-            )
-        except Exception as tool_error:
-            return MCPResponse(
-                id=request.id,
-                result={
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": f"Tool execution error: {str(tool_error)}"
-                        }
-                    ],
-                    "isError": True
-                }
-            )
