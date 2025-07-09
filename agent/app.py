@@ -8,9 +8,6 @@ from agent.clients.dial_client import DialClient
 from agent.models.message import Message, Role
 
 
-# https://mcp.deepwiki.com/mcp
-# https://remote.mcpservers.org/fetch/mcp
-
 async def main():
     mcp_client = MCPClient()
 
