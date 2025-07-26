@@ -18,7 +18,7 @@ class DialClient:
         self.openai = AsyncAzureOpenAI(
             api_key=api_key,
             azure_endpoint=endpoint,
-            api_version="2025-01-01-preview"
+            api_version=""
         )
 
     def _collect_tool_calls(self, tool_deltas):
