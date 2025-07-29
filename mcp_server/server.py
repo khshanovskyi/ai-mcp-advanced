@@ -31,7 +31,7 @@ async def _create_sse_stream(messages: list):
     # 1. Iterate through `messages` list
     # 2. For each message, create `event_data` string in format: f"data: {json.dumps(message.dict(exclude_none=True))}\n\n"
     # 3. Yield `event_data.encode('utf-8')`
-    # 4. After loop, yield final message: b"data: [DONE]\n\n"
+    # 4. After loop, yield final message: b"data: [DONE]\n\n" (indicator that the streaming is finished)
 
 
 @app.post("/mcp")
