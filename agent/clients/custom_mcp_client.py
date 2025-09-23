@@ -24,18 +24,11 @@ class CustomMCPClient:
     async def _send_request(self, method: str, params: Optional[dict[str, Any]] = None) -> dict[str, Any]:
         """Send JSON-RPC request to MCP server"""
         #TODO:
-        # 1. Check if `self.http_session` is None, raise RuntimeError("HTTP session not initialized") if so
-        # 2. Create `request_data` dictionary with:
-        #       - "jsonrpc": "2.0"
-        #       - "id": str(uuid.uuid4())
-        #       - "method": method
-        # 3. If `params` exists, add "params" to `request_data` dict
-        # 4. Create `headers` dictionary with:
-        #       - "Content-Type": "application/json"
-        #       - "Accept": "application/json, text/event-stream" (pay attention that here is 2 Accepted content types)
-        # 5. Add session ID header for non-initialize requests (notify, discovery, operation):
-        #       - If `method != "initialize"` and `self.session_id` exists, add `headers[MCP_SESSION_ID_HEADER] = self.session_id`
-        # 6. Make async POST request using `self.http_session.post()` as `response` with:
+        # 1. Check session is present
+        # 2. Prepare request body and don't forget to add parameters there if they are present. Sample of request body see in Postman collection
+        # 3. Prepare headers dict. Remember that according to protocol MCP Server Accept application/json and text/event-stream
+        # 4. Add session ID header for non-initialize requests (notify, discovery, operation):
+        # 5. Make POST request using `self.http_session.post()` as `response` with:
         #       - url: self.server_url
         #       - json: request_data
         #       - headers: headers
@@ -99,7 +92,7 @@ class CustomMCPClient:
     async def _send_notification(self, method: str) -> None:
         """Send notification (no response expected)"""
         #TODO:
-        # 1. Check if `self.http_session` is None, raise RuntimeError("HTTP session not initialized") if so
+        # 1. Check if `self.http_session` is None, raise RuntimeError("HTTP session not initialized")
         # 2. Create `request_data` dictionary with:
         #       - "jsonrpc": "2.0"
         #       - "method": method
@@ -117,18 +110,11 @@ class CustomMCPClient:
     async def get_tools(self) -> list[dict[str, Any]]:
         """Get available tools from MCP server"""
         #TODO:
-        # 1. Check if `self.http_session` is None, raise RuntimeError("MCP client not connected. Call connect() first.") if so
-        # 2. Call `await self._send_request("tools/list")` and assign to `response`
-        # 3. Extract tools from response: `tools = response["result"]["tools"]`
-        # 4. Iterate through `tools` and return list comprehension that transforms each tool in tools to:
-        #       {
-        #           "type": "function",
-        #           "function": {
-        #               "name": tool["name"],
-        #               "description": tool["description"],
-        #               "parameters": tool["inputSchema"]
-        #           }
-        #       }
+        # 1. Check if session is present
+        # 2. Send request with method `tools/list`
+        # 3. Extract tools from response. See response sample in postman
+        # 4. Return list with dicts with tool schemas. It should be provided according to DIAL specification
+        # https://dialx.ai/dial_api#operation/sendChatCompletionRequest (request -> tools)
         raise NotImplementedError()
 
     async def call_tool(self, tool_name: str, tool_args: dict[str, Any]) -> Any:

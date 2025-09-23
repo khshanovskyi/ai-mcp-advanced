@@ -8,59 +8,18 @@ from agent.clients.dial_client import DialClient
 from agent.models.message import Message, Role
 
 
-async def _collect_tools(
-        client: MCPClient | CustomMCPClient,
-        tools: list[dict],
-        tool_name_client_map: dict[str, MCPClient | CustomMCPClient]
-):
-    for tool in await client.get_tools():
-        tools.append(tool)
-        tool_name_client_map[tool.get('function', {}).get('name')] = client
-        print(f"{json.dumps(tool, indent=2)}")
-
 async def main():
-    tools: list[dict] = []
-    tool_name_client_map: dict[str, MCPClient | CustomMCPClient] = {}
-
     #TODO:
-    # Test it later with implemented CustomMCPClient
-
-    ums_mcp_client = await MCPClient.create("http://localhost:8006/mcp")
-    await _collect_tools(ums_mcp_client, tools, tool_name_client_map)
-
-    fetch_mcp_client = await MCPClient.create("https://remote.mcpservers.org/fetch/mcp")
-    await _collect_tools(fetch_mcp_client, tools, tool_name_client_map)
-
-    dial_client = DialClient(
-        api_key=os.getenv("DIAL_API_KEY"),
-        endpoint="https://ai-proxy.lab.epam.com",
-        tools=tools,
-        tool_name_client_map=tool_name_client_map
-    )
-
-    messages: list[Message] = [
-        Message(
-            role=Role.SYSTEM,
-            content="You are an advanced AI agent. Your goal is to assist user with his questions."
-        )
-    ]
-
-    print("MCP-based Agent is ready! Type your query or 'exit' to exit.")
-    while True:
-        user_input = input("\n> ").strip()
-        if user_input.lower() == 'exit':
-            break
-
-        messages.append(
-            Message(
-                role=Role.USER,
-                content=user_input
-            )
-        )
-
-        ai_message: Message = await dial_client.get_completion(messages)
-        messages.append(ai_message)
-
+    # 1. Take a look what applies DialClient
+    # 2. Create empty list where you save tools from MCP Servers later
+    # 3. Create empty dict where where key is str (tool name) and value is instance of MCPClient or CustomMCPClient
+    # 4. Create UMS MCPClient, url is `http://localhost:8006/mcp` (use static method create and don't forget that its async)
+    # 5. Collect tools and dict [tool name, mcp client]
+    # 6. Do steps 4 and 5 for `https://remote.mcpservers.org/fetch/mcp`
+    # 7. Create DialClient, endpoint is `https://ai-proxy.lab.epam.com`
+    # 8. Create array with Messages and add there System message with simple instructions for LLM that it should help to handle user request
+    # 9. Create simple console chat (as we done in previous tasks)
+    raise NotImplementedError()
 
 if __name__ == "__main__":
     asyncio.run(main())
