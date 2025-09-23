@@ -25,7 +25,7 @@ async def main():
     ums_mcp_client = await MCPClient.create("http://localhost:8006/mcp")
     await _collect_tools(ums_mcp_client, tools, tool_name_client_map)
 
-    fetch_mcp_client = await MCPClient.create("https://remote.mcpservers.org/fetch/mcp")
+    fetch_mcp_client = await CustomMCPClient.create("https://remote.mcpservers.org/fetch/mcp")
     await _collect_tools(fetch_mcp_client, tools, tool_name_client_map)
 
     dial_client = DialClient(
