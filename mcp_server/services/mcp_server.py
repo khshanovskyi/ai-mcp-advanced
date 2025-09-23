@@ -1,11 +1,14 @@
-import os
 import uuid
 import asyncio
 
 from mcp_server.models.request import MCPRequest
 from mcp_server.models.response import MCPResponse, ErrorResponse
-from mcp_server.tools.calculator import CalculatorTool
-from mcp_server.tools.web_search import WebSearchTool
+from mcp_server.tools.users.create_user_tool import CreateUserTool
+from mcp_server.tools.users.delete_user_tool import DeleteUserTool
+from mcp_server.tools.users.get_user_by_id_tool import GetUserByIdTool
+from mcp_server.tools.users.search_users_tool import SearchUsersTool
+from mcp_server.tools.users.update_user_tool import UpdateUserTool
+from mcp_server.tools.users.user_client import UserClient
 
 
 class MCPSession:
@@ -23,7 +26,7 @@ class MCPServer:
     def __init__(self):
         self.protocol_version = "2024-11-05"
         self.server_info = {
-            "name": "mcp-tools-server",
+            "name": "custom-ums-mcp-server",
             "version": "1.0.0"
         }
 
@@ -34,14 +37,15 @@ class MCPServer:
 
     def _register_tools(self):
         """Register all available tools"""
-        calculator = CalculatorTool()
-        self.tools[calculator.name] = calculator
-
-        web_search = WebSearchTool(
-            api_key=os.getenv("DIAL_API_KEY"),
-            endpoint=os.getenv("DIAL_ENDPOINT", "https://ai-proxy.lab.epam.com")
-        )
-        self.tools[web_search.name] = web_search
+        user_client = UserClient()
+        for tool in [
+            GetUserByIdTool(user_client),
+            SearchUsersTool(user_client),
+            CreateUserTool(user_client),
+            UpdateUserTool(user_client),
+            DeleteUserTool(user_client),
+        ]:
+            self.tools[tool.name] = tool
 
     def _validate_protocol_version(self, client_version: str) -> str:
         """Validate and negotiate protocol version"""
@@ -69,9 +73,9 @@ class MCPServer:
             result={
                 "protocolVersion": protocol_version,
                 "capabilities": {
-                    "tools": {},
-                    "resources": {},
-                    "prompts": {}
+                    "tools": {"listChanged": True},
+                    "resources": None,
+                    "prompts": None
                 },
                 "serverInfo": self.server_info
             }
@@ -87,7 +91,7 @@ class MCPServer:
             result={"tools": tools_list}
         )
 
-    def handle_tools_call(self, request: MCPRequest) -> MCPResponse:
+    async def handle_tools_call(self, request: MCPRequest) -> MCPResponse:
         """Handle tools/call request with proper MCP-compliant response format"""
 
         if not request.params:
@@ -102,6 +106,7 @@ class MCPServer:
         # Extract tool name and arguments according to MCP spec
         tool_name = request.params.get("name")
         arguments = request.params.get("arguments", {})
+        print(request)
 
         if not tool_name:
             return MCPResponse(
@@ -124,7 +129,7 @@ class MCPServer:
         tool = self.tools[tool_name]
 
         try:
-            result_text = tool.execute(arguments)
+            result_text = await tool.execute(arguments)
             return MCPResponse(
                 id=request.id,
                 result={

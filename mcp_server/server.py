@@ -29,6 +29,7 @@ def _validate_accept_header(accept_header: Optional[str]) -> bool:
 async def _create_sse_stream(messages: list):
     """Create Server-Sent Events stream for responses"""
     for message in messages:
+        print(messages)
         event_data = f"data: {json.dumps(message.dict(exclude_none=True))}\n\n"
         yield event_data.encode('utf-8')
 
@@ -114,7 +115,7 @@ async def handle_mcp_request(
         if request.method == "tools/list":
             mcp_response = mcp_server.handle_tools_list(request)
         elif request.method == "tools/call":
-            mcp_response = mcp_server.handle_tools_call(request)
+            mcp_response = await mcp_server.handle_tools_call(request)
         else:
             mcp_response = MCPResponse(
                 id=request.id,

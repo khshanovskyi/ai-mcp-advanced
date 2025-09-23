@@ -14,6 +14,13 @@ class CustomMCPClient:
         self.session_id: Optional[str] = None
         self.http_session: Optional[aiohttp.ClientSession] = None
 
+    @classmethod
+    async def create(cls, mcp_server_url: str) -> 'CustomMCPClient':
+        """Async factory method to create and connect CustomMCPClient"""
+        instance = cls()
+        await instance.connect(mcp_server_url)
+        return instance
+
     async def _send_request(self, method: str, params: Optional[dict[str, Any]] = None) -> dict[str, Any]:
         """Send JSON-RPC request to MCP server"""
         if not self.http_session:

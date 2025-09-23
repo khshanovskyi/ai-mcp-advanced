@@ -8,19 +8,31 @@ from agent.clients.dial_client import DialClient
 from agent.models.message import Message, Role
 
 
-async def main():
-    mcp_client = MCPClient()
-
-    await mcp_client.connect(mcp_server_url="http://localhost:8006/mcp")
-    tools: list[dict] = await mcp_client.get_tools()
-    for tool in tools:
+async def _collect_tools(
+        client: MCPClient | CustomMCPClient,
+        tools: list[dict],
+        tool_name_client_map: dict[str, MCPClient | CustomMCPClient]
+):
+    for tool in await client.get_tools():
+        tools.append(tool)
+        tool_name_client_map[tool.get('function', {}).get('name')] = client
         print(f"{json.dumps(tool, indent=2)}")
+
+async def main():
+    tools: list[dict] = []
+    tool_name_client_map: dict[str, MCPClient | CustomMCPClient] = {}
+
+    ums_mcp_client = await MCPClient.create("http://localhost:8006/mcp")
+    await _collect_tools(ums_mcp_client, tools, tool_name_client_map)
+
+    fetch_mcp_client = await MCPClient.create("https://remote.mcpservers.org/fetch/mcp")
+    await _collect_tools(fetch_mcp_client, tools, tool_name_client_map)
 
     dial_client = DialClient(
         api_key=os.getenv("DIAL_API_KEY"),
         endpoint="https://ai-proxy.lab.epam.com",
         tools=tools,
-        mcp_client=mcp_client
+        tool_name_client_map=tool_name_client_map
     )
 
     messages: list[Message] = [
@@ -49,3 +61,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+# Check if Arkadiy Dobkin present as a user, if not then search info about him in the web and add him
