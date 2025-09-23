@@ -9,15 +9,15 @@ MCP_SESSION_ID_HEADER = "Mcp-Session-Id"
 class CustomMCPClient:
     """Pure Python MCP client without external MCP libraries"""
 
-    def __init__(self, ) -> None:
-        self.server_url = None
+    def __init__(self, mcp_server_url: str) -> None:
+        self.server_url = mcp_server_url
         self.session_id: Optional[str] = None
         self.http_session: Optional[aiohttp.ClientSession] = None
 
     @classmethod
     async def create(cls, mcp_server_url: str) -> 'CustomMCPClient':
         """Async factory method to create and connect CustomMCPClient"""
-        instance = cls()
+        instance = cls(mcp_server_url)
         await instance.connect(mcp_server_url)
         return instance
 
@@ -55,7 +55,14 @@ class CustomMCPClient:
             if response.status == 204:
                 return {}
 
-            response_data = await self._parse_sse_response(response)
+            # Check content type to determine parsing strategy
+            content_type = response.headers.get('content-type', '').lower()
+
+            if 'text/event-stream' in content_type:
+                response_data = await self._parse_sse_response_streaming(response)
+            else:
+                # Handle regular JSON response
+                response_data = await response.json()
 
             if "error" in response_data:
                 error = response_data["error"]
@@ -63,24 +70,49 @@ class CustomMCPClient:
 
             return response_data
 
-    async def _parse_sse_response(self, response: aiohttp.ClientResponse) -> dict[str, Any]:
-        """Parse Server-Sent Events response"""
-        content = await response.text()
-        lines = content.strip().split('\n')
+    async def _parse_sse_response_streaming(self, response: aiohttp.ClientResponse) -> dict[str, Any]:
+        """Parse Server-Sent Events response with streaming"""
+        async for line in response.content:
+            line_str = line.decode('utf-8').strip()
 
-        for line in lines:
+            if not line_str or line_str.startswith(':'):
+                continue
+
+            if line_str.startswith('data: '):
+                data_part = line_str[6:].strip()
+
+                if data_part in ('[DONE]', ''):
+                    continue
+
+                try:
+                    return json.loads(data_part)
+                except json.JSONDecodeError:
+                    continue
+
+        raise RuntimeError("No valid JSON data found in SSE stream")
+
+    async def _parse_sse_response(self, response: aiohttp.ClientResponse) -> dict[str, Any]:
+        """Fallback SSE parser - more efficient version of original"""
+        content = await response.text()
+
+        for line in content.splitlines():
             line = line.strip()
             if line.startswith('data: '):
-                data_part = line[6:]
-                if data_part != '[DONE]':
-                    return json.loads(data_part)
+                data_part = line[6:].strip()
+                if data_part and data_part != '[DONE]':
+                    try:
+                        return json.loads(data_part)
+                    except json.JSONDecodeError:
+                        continue
 
         raise RuntimeError("No valid data found in SSE response")
 
     async def connect(self, mcp_server_url: str) -> None:
         """Connect to MCP server and initialize session"""
-        self.server_url = mcp_server_url
-        self.http_session = aiohttp.ClientSession()
+        # Create session with timeout and connection limits
+        timeout = aiohttp.ClientTimeout(total=30, connect=10)
+        connector = aiohttp.TCPConnector(limit=100, limit_per_host=10)
+        self.http_session = aiohttp.ClientSession(timeout=timeout, connector=connector)
 
         try:
             init_params = {
@@ -94,9 +126,9 @@ class CustomMCPClient:
                 }
             }
 
-            await self._send_request("initialize", init_params)
+            init_result = await self._send_request("initialize", init_params)
             await self._send_notification("notifications/initialized")
-            print("MCP client connected and initialized successfully")
+            print(json.dumps(init_result, indent=2))
         except Exception as e:
             raise RuntimeError(f"Failed to connect to MCP server: {e}")
 
@@ -140,8 +172,8 @@ class CustomMCPClient:
                 "type": "function",
                 "function": {
                     "name": tool["name"],
-                    "description": tool["description"],
-                    "parameters": tool["inputSchema"]
+                    "description": tool.get("description", ""),
+                    "parameters": tool.get("inputSchema", {})
                 }
             }
             for tool in tools
@@ -161,7 +193,7 @@ class CustomMCPClient:
 
         response = await self._send_request("tools/call", params)
 
-        if content:= response["result"].get("content", []):
+        if content := response["result"].get("content", []):
             if item := content[0]:
                 text_result = item.get("text", "")
                 print(f"    ⚙️: {text_result}\n")
