@@ -69,6 +69,8 @@ By completing this project, you will learn:
 ---
 
 # 🚀 Task:
+### If the task in the main branch is hard for you, then switch to the `with-detailed-description` branch
+
 ## Create MCP Server:
 1. Open [mcp_server](mcp_server) and review mcp server structure:
    - in [models](mcp_server/models) persist implemented request and response models, details about request and response [official documentation](https://modelcontextprotocol.io/specification/2025-06-18/basic)
