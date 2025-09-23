@@ -18,7 +18,7 @@ class CustomMCPClient:
     async def create(cls, mcp_server_url: str) -> 'CustomMCPClient':
         """Async factory method to create and connect CustomMCPClient"""
         instance = cls(mcp_server_url)
-        await instance.connect(mcp_server_url)
+        await instance.connect()
         return instance
 
     async def _send_request(self, method: str, params: Optional[dict[str, Any]] = None) -> dict[str, Any]:
@@ -93,7 +93,6 @@ class CustomMCPClient:
 
     async def connect(self) -> None:
         """Connect to MCP server and initialize session"""
-        # Create session with timeout and connection limits
         timeout = aiohttp.ClientTimeout(total=30, connect=10)
         connector = aiohttp.TCPConnector(limit=100, limit_per_host=10)
         self.http_session = aiohttp.ClientSession(timeout=timeout, connector=connector)
