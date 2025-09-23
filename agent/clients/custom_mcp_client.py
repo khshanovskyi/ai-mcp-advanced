@@ -91,23 +91,7 @@ class CustomMCPClient:
 
         raise RuntimeError("No valid JSON data found in SSE stream")
 
-    async def _parse_sse_response(self, response: aiohttp.ClientResponse) -> dict[str, Any]:
-        """Fallback SSE parser - more efficient version of original"""
-        content = await response.text()
-
-        for line in content.splitlines():
-            line = line.strip()
-            if line.startswith('data: '):
-                data_part = line[6:].strip()
-                if data_part and data_part != '[DONE]':
-                    try:
-                        return json.loads(data_part)
-                    except json.JSONDecodeError:
-                        continue
-
-        raise RuntimeError("No valid data found in SSE response")
-
-    async def connect(self, mcp_server_url: str) -> None:
+    async def connect(self) -> None:
         """Connect to MCP server and initialize session"""
         # Create session with timeout and connection limits
         timeout = aiohttp.ClientTimeout(total=30, connect=10)
