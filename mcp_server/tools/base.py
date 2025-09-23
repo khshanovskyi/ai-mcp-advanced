@@ -23,7 +23,7 @@ class BaseTool(ABC):
         pass
 
     @abstractmethod
-    def execute(self, arguments: Dict[str, Any]) -> str:
+    async def execute(self, arguments: Dict[str, Any]) -> str:
         """Execute the tool with MCP-compliant arguments
 
         Args:

@@ -82,17 +82,10 @@ By completing this project, you will learn:
 5. Test agent with queries below 👇
 6. Provide implementations described in `TODO` sections for [custom_mcp_client.py](agent/clients/custom_mcp_client.py)
 7. Test again agent with queries below 👇
-
-
-## 🧪 Testing Scenarios
-
 ```text
-495903.928834 * 39483.1038472
+Check if Arkadiy Dobkin present as a user, if not then search info about him in the web and add him
 ```
 
-```text
-What is the weather in Kyiv now?
-```
 ---
 ## 🔍 MCP Protocol Details
 
@@ -127,6 +120,7 @@ What is the weather in Kyiv now?
 2. **Notification**: Client sends `notifications/initialized`
 3. **Discovery**: Client calls `tools/list` to get available tools
 4. **Operation**: Client calls `tools/call` with specific tool and arguments
+5. **Shutdown**: `DELETE, {host}, Mcp-Session-Id: {Mcp-Session-Id}`, shutdown is not covered in this practice, but it's simple REST request
 
 ### Headers
 
@@ -151,51 +145,6 @@ What is the weather in Kyiv now?
 - **Tool Arguments**: Arguments must be properly formatted as per tool schema
 - **Async Context**: Use proper async/await patterns for HTTP requests
 
-## 📊 Expected Output
-
-When running successfully, you should see:
-
-```
-MCP client connected and initialized successfully
-{
-  "type": "function",
-  "function": {
-    "name": "simple_calculator",
-    "description": "Provides results of basic math calculations",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "num1": {"type": "number", "description": "First operand"},
-        "num2": {"type": "number", "description": "Second operand"},
-        "operation": {"type": "string", "description": "Operation to perform", "enum": ["add", "subtract", "multiply", "divide"]}
-      },
-      "required": ["num1", "num2", "operation"]
-    }
-  }
-}
-{
-  "type": "function",
-  "function": {
-    "name": "web_search",
-    "description": "Performs WEB search",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "request": {"type": "string", "description": "The search query or question to search for on the web"}
-      },
-      "required": ["request"]
-    }
-  }
-}
-MCP-based Agent is ready! Type your query or 'exit' to exit.
-
-> Calculate 15 * 23
-🤖: I'll calculate 15 * 23 for you.
-    Calling `simple_calculator` with {'num1': 15, 'num2': 23, 'operation': 'multiply'}
-    ⚙️: Result: 345
-
-The result of 15 * 23 is 345.
-```
 
 ## 📚 Additional Resources
 

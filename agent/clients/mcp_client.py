@@ -8,10 +8,17 @@ from mcp.types import CallToolResult, TextContent
 class MCPClient:
     """Handles MCP server connection and tool execution"""
 
-    def __init__(self, ) -> None:
+    def __init__(self) -> None:
         self.session: Optional[ClientSession] = None
         self._streams_context = None
         self._session_context = None
+
+    @classmethod
+    async def create(cls, mcp_server_url: str) -> 'MCPClient':
+        """Async factory method to create and connect MCPClient"""
+        instance = cls()
+        await instance.connect(mcp_server_url)
+        return instance
 
     async def connect(self, mcp_server_url: str):
         """Connect to MCP server"""
@@ -21,7 +28,8 @@ class MCPClient:
         self._session_context = ClientSession(read_stream, write_stream)
         self.session: ClientSession = await self._session_context.__aenter__()
 
-        await self.session.initialize()
+        init_result = await self.session.initialize()
+        print(init_result.model_dump_json(indent=2))
 
     async def get_tools(self) -> list[dict[str, Any]]:
         """Get available tools from MCP server"""

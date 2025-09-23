@@ -12,9 +12,15 @@ from agent.clients.mcp_client import MCPClient
 class DialClient:
     """Handles AI model interactions and integrates with MCP client"""
 
-    def __init__(self, api_key: str, endpoint: str, tools: list[dict[str, Any]], mcp_client: MCPClient | CustomMCPClient):
+    def __init__(
+            self,
+            api_key: str,
+            endpoint: str,
+            tools: list[dict[str, Any]],
+            tool_name_client_map: dict[str, MCPClient | CustomMCPClient]
+    ):
         self.tools = tools
-        self.mcp_client = mcp_client
+        self.tool_name_client_map = tool_name_client_map
         self.openai = AsyncAzureOpenAI(
             api_key=api_key,
             azure_endpoint=endpoint,
@@ -89,7 +95,11 @@ class DialClient:
             tool_args = json.loads(tool_call["function"]["arguments"])
 
             try:
-                tool_result = await self.mcp_client.call_tool(tool_name, tool_args)
+                client = self.tool_name_client_map.get(tool_name)
+                if not client:
+                    raise Exception(f"Unable to call {tool_name}. MCP client not found.")
+
+                tool_result = await client.call_tool(tool_name, tool_args)
 
                 # Add tool result to history
                 messages.append(
