@@ -52,7 +52,7 @@ class CustomMCPClient:
             if not self.session_id and response.headers.get(MCP_SESSION_ID_HEADER):
                 self.session_id = response.headers[MCP_SESSION_ID_HEADER]
 
-            if response.status == 204:
+            if response.status == 202:
                 return {}
 
             # Check content type to determine parsing strategy
