@@ -34,7 +34,7 @@ class CustomMCPClient:
         #       - headers: headers
         #    And:
         #       - If `not self.session_id` and `response.headers.get(MCP_SESSION_ID_HEADER)` exists, set `self.session_id = response.headers[MCP_SESSION_ID_HEADER]`
-        #       - If `response.status == 204`, return empty dict `{}` (successful notification)
+        #       - If `response.status == 202`, return empty dict `{}` (successful notification)
         #       - Get `content-type` from response headers
         #       - If `'text/event-stream' in content_type.lower()`:
         #           - call `await self._parse_sse_response_streaming(response)` and assign to `response_data`
