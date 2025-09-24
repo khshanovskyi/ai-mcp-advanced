@@ -72,11 +72,11 @@ By completing this project, you will learn:
 ### If the task in the main branch is hard for you, then switch to the `with-detailed-description` branch
 
 ## Create MCP Server:
+0. Run [docker desctop with UMS](docker-compose.yml)
 1. Open [mcp_server](mcp_server) and review mcp server structure:
    - in [models](mcp_server/models) persist implemented request and response models, details about request and response [official documentation](https://modelcontextprotocol.io/specification/2025-06-18/basic)
    - in [services/mcp_server.py](mcp_server/services/mcp_server.py) you need to implement parts described in `TODO` sections
-   - in [tools](mcp_server/tools) you will find simple tools. Please take a look at [BaseTool](mcp_server/tools/base.py), especially at `to_mcp_tool` method that collects tool JSON Schema
-   - in [tools/web_search.py](mcp_server/tools/web_search.py) provide implementations described in `TODO` sections
+   - in [tools](mcp_server/tools) you will find simple tools
    - lastly, in [server.py](mcp_server/server.py) provide implementations described in `TODO` sections
 2. Run MCP server locally
 3. Test it with Postman. Import [mcp.postman_collection.json](mcp.postman_collection.json) into postman. (`init` -> `init-notification` -> `tools/list` -> `tools/call`)
