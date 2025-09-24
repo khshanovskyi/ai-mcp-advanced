@@ -93,7 +93,7 @@ async def handle_mcp_request(
             session.ready_for_operation = True
             print("Client initialization complete")
             return Response(
-                status_code=204,
+                status_code=202,
                 headers={MCP_SESSION_ID_HEADER: session.session_id},
             )
 
