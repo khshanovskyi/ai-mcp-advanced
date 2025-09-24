@@ -70,7 +70,7 @@ async def handle_mcp_request(
     #               - content="No valid session ID provided"
     #           - Handle notifications/initialized: if `request.method == "notifications/initialized"` then set
     #               - `session.ready_for_operation = True`
-    #               - then return Response with status_code=204 and headers={MCP_SESSION_ID_HEADER: session.session_id}
+    #               - then return Response with status_code=202 and headers={MCP_SESSION_ID_HEADER: session.session_id}
     #           - Check if session is ready:
     #               - if not `session.ready_for_operation`, then create error_response and return Response with status_code=400
     #                   and MCPResponse(id="server-error", error=ErrorResponse(code=-32600, message="Missing session ID"))
